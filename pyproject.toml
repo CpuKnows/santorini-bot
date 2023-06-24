@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "santorini-bot"
+version = "0.2.0"
+description = ""
+authors = ["JMaxwell <jmaxwell@syntellis.com>"]
+readme = "README.md"
+packages = [{include = "santorini_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.24.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+pre-commit = "^2.21.0"
+pylint = "^2.15.9"
+mypy = "^0.991"
+pytest = "^7.2.0"
+ruff = "^0.0.236"
+coverage = "^7.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.BASIC]
+good-names = ["x", "y"]
+disable = ["W1203", "R0902", "R0913", "R0914"]
