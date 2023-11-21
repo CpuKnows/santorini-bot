@@ -960,7 +960,7 @@ class TestPlayerInWinState:
             )
 
 
-class TestPlayerInLoseStateAfterMove:
+class TestPlayerInlossStateAfterMove:
 
     _default_board = Board(length=3, width=3, max_height=4, max_workers_per_player=1)
 
@@ -972,13 +972,13 @@ class TestPlayerInLoseStateAfterMove:
         worker_y: int
         worker: Worker
         valid_builds: list[BuildTurn]
-        expect_is_lose_state: bool
+        expect_is_loss_state: bool
 
     @dataclass
     class Fixture:
         board: Board
-        expected_is_lose_state: bool
-        test_is_lose_state: bool
+        expected_is_loss_state: bool
+        test_is_loss_state: bool
 
     @pytest.fixture(
         params=[
@@ -993,7 +993,7 @@ class TestPlayerInLoseStateAfterMove:
                         color=Color.BLUE, worker_x=0, worker_y=0, build_x=1, build_y=1
                     )
                 ],
-                expect_is_lose_state=False,
+                expect_is_loss_state=False,
             ),
             Parameters(
                 description="Worker has no valid build",
@@ -1002,7 +1002,7 @@ class TestPlayerInLoseStateAfterMove:
                 worker_y=0,
                 worker=Worker(x=0, y=0, height=0, color=Color.BLUE),
                 valid_builds=[],
-                expect_is_lose_state=True,
+                expect_is_loss_state=True,
             ),
         ],
         ids=lambda x: x.description,
@@ -1012,21 +1012,21 @@ class TestPlayerInLoseStateAfterMove:
     def setup(
         self, mock_get_valid_builds: Mock, mock_get_worker_at: Mock, caplog, request
     ) -> Fixture:
-        param: TestPlayerInLoseStateAfterMove.Parameters = request.param
+        param: TestPlayerInlossStateAfterMove.Parameters = request.param
 
         mock_get_valid_builds.return_value = param.valid_builds
         mock_get_worker_at.return_value = param.worker
 
         board = deepcopy(param.board)
-        test_is_lose_state = board.player_in_lose_state_after_move(
+        test_is_loss_state = board.player_in_loss_state_after_move(
             worker_x=param.worker_x, worker_y=param.worker_y
         )
 
         return self.Fixture(
             board=board,
-            expected_is_lose_state=param.expect_is_lose_state,
-            test_is_lose_state=test_is_lose_state,
+            expected_is_loss_state=param.expect_is_loss_state,
+            test_is_loss_state=test_is_loss_state,
         )
 
-    def test_lose_state(self, setup: Fixture):
-        assert setup.test_is_lose_state == setup.expected_is_lose_state
+    def test_loss_state(self, setup: Fixture):
+        assert setup.test_is_loss_state == setup.expected_is_loss_state

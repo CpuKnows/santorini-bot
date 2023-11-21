@@ -152,7 +152,7 @@ class GameManager:
             )
 
         board = deepcopy(self.board)
-        in_lose_state_cant_build = False
+        in_loss_state_cant_build = False
 
         if turn_action == TurnActions.PLACE_WORKER:
             board.place_worker(
@@ -194,8 +194,8 @@ class GameManager:
                 )
             )
 
-            # check for lose state
-            in_lose_state_cant_build = board.player_in_lose_state_after_move(
+            # check for loss state
+            in_loss_state_cant_build = board.player_in_loss_state_after_move(
                 worker_x=turn_coordinates[2], worker_y=turn_coordinates[3]
             )
 
@@ -228,21 +228,21 @@ class GameManager:
 
         self.board = board
 
-        # Check for win/lose state
+        # Check for win/loss state
         in_win_state = self._check_win_state_board_win_state(logger_info_message=False)
 
         if not in_win_state:
             # Update new state
             if self.previous_game_state is not None and (
                 self.previous_game_state.turn_action != TurnActions.MOVE
-                or in_lose_state_cant_build
+                or in_loss_state_cant_build
             ):
                 # Move should be followed by build of same worker
                 # If a worker can't build then they lose and are removed from the turn
                 # order
                 self._change_active_player()
 
-            if not in_lose_state_cant_build:
+            if not in_loss_state_cant_build:
                 # Must update board before turn action because checks depend on board
                 # state
                 self._change_current_turn_action()
@@ -281,16 +281,16 @@ class GameManager:
 
     def _in_end_game_state(self) -> bool:
         """
-        Remove players in lose state and optionally declare a winner.
+        Remove players in loss state and optionally declare a winner.
 
-        Players can be in a lose state if they don't have a valid move and build on
+        Players can be in a loss state if they don't have a valid move and build on
         their turn. A player can win by reaching the highest level on their turn or
         being the last remaining player.
 
         :return: True if a player is in a win state otherwise False
         """
-        self._check_lose_state_player_cant_build()
-        self._check_lose_state_player_cant_move()
+        self._check_loss_state_player_cant_build()
+        self._check_loss_state_player_cant_move()
 
         is_in_end_game_state = self._check_win_state_one_player_left()
 
@@ -301,7 +301,7 @@ class GameManager:
 
         return is_in_end_game_state
 
-    def _check_lose_state_player_cant_build(self):
+    def _check_loss_state_player_cant_build(self):
         """
         Check if a player has lost because they can't build with the worker they moved
         the last turn. If so remove that player from the player order and output that
@@ -314,21 +314,21 @@ class GameManager:
             and len(self.player_order) != 1
             and self.previous_game_state.turn_action == TurnActions.MOVE
         ):
-            in_lose_state_cant_build = (
-                self.previous_game_state.board.player_in_lose_state_after_move(
+            in_loss_state_cant_build = (
+                self.previous_game_state.board.player_in_loss_state_after_move(
                     worker_x=self.previous_game_state.turn.end_x,
                     worker_y=self.previous_game_state.turn.end_y,
                 )
             )
 
-            if in_lose_state_cant_build:
+            if in_loss_state_cant_build:
                 logger.info(
                     f"Player {self.previous_game_state.active_player} lost! No valid "
                     "builds."
                 )
                 self.player_order.remove(self.previous_game_state.active_player)
 
-    def _check_lose_state_player_cant_move(self):
+    def _check_loss_state_player_cant_move(self):
         """
         Check if a player has lost because they can't make a valid move with any of
         their workers. If so remove that player from the player order and output that
@@ -341,13 +341,13 @@ class GameManager:
             and len(self.player_order) != 1
             and self.current_turn_action == TurnActions.MOVE
         ):
-            in_lose_state = (
-                self.previous_game_state.board.player_in_lose_state_before_move(
+            in_loss_state = (
+                self.previous_game_state.board.player_in_loss_state_before_move(
                     color=self.active_player
                 )
             )
 
-            if in_lose_state:
+            if in_loss_state:
                 logger.info(f"Player {self.active_player.value} lost! No valid moves.")
                 self.player_order.remove(self.active_player)
 

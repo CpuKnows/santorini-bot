@@ -511,9 +511,9 @@ class Board:
 
         return len(workers_at_max_height) == 1
 
-    def player_in_lose_state_before_move(self, color: Color) -> bool:
+    def player_in_loss_state_before_move(self, color: Color) -> bool:
         """
-        Test if board is in a lose state. Assumes player `color` is the active player.
+        Test if board is in a loss state. Assumes player `color` is the active player.
 
         Win conditions:
         1. If one of your Workers moves up on top height during your turn, you
@@ -525,7 +525,7 @@ class Board:
         """
         return not self.player_can_move(color=color)
 
-    def player_in_lose_state_after_move(self, worker_x: int, worker_y: int) -> bool:
+    def player_in_loss_state_after_move(self, worker_x: int, worker_y: int) -> bool:
         """
         Assumes worker at (`worker_x`, `worker_y`) moved last turn and needs to build
         next.

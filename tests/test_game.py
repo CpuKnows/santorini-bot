@@ -22,7 +22,7 @@ class TestUpdateGameState:
         next_active_player: Optional[Color]
         previous_turn_action: Optional[TurnActions]
         previous_turn: Optional[TurnArgs]
-        in_lose_state_after_move: bool
+        in_loss_state_after_move: bool
         in_win_state_after_move: bool
 
     @dataclass
@@ -36,7 +36,7 @@ class TestUpdateGameState:
         mock_change_active_player: Mock
         mock_change_current_turn_action: Mock
         initial_game_state_log_len: int
-        in_lose_state_after_move: bool
+        in_loss_state_after_move: bool
         in_win_state_after_move: bool
 
     @pytest.fixture(
@@ -50,7 +50,7 @@ class TestUpdateGameState:
                 next_active_player=Color.BLUE,
                 previous_turn_action=None,
                 previous_turn=None,
-                in_lose_state_after_move=False,
+                in_loss_state_after_move=False,
                 in_win_state_after_move=False,
             ),
             Parameters(
@@ -62,11 +62,11 @@ class TestUpdateGameState:
                 next_active_player=Color.BLUE,
                 previous_turn_action=None,
                 previous_turn=None,
-                in_lose_state_after_move=False,
+                in_loss_state_after_move=False,
                 in_win_state_after_move=False,
             ),
             Parameters(
-                description="Move turn, in lose state after move",
+                description="Move turn, in loss state after move",
                 initial_player_order=[Color.BLUE, Color.WHITE],
                 initial_turn_order=deque([TurnActions.MOVE, TurnActions.BUILD]),
                 next_turn_action=TurnActions.MOVE,
@@ -74,7 +74,7 @@ class TestUpdateGameState:
                 next_active_player=Color.BLUE,
                 previous_turn_action=None,
                 previous_turn=None,
-                in_lose_state_after_move=True,
+                in_loss_state_after_move=True,
                 in_win_state_after_move=False,
             ),
             Parameters(
@@ -86,7 +86,7 @@ class TestUpdateGameState:
                 next_active_player=Color.BLUE,
                 previous_turn_action=None,
                 previous_turn=None,
-                in_lose_state_after_move=False,
+                in_loss_state_after_move=False,
                 in_win_state_after_move=True,
             ),
             Parameters(
@@ -100,7 +100,7 @@ class TestUpdateGameState:
                 previous_turn=MoveTurn(
                     color=Color.WHITE, start_x=0, start_y=1, end_x=0, end_y=0
                 ),
-                in_lose_state_after_move=False,
+                in_loss_state_after_move=False,
                 in_win_state_after_move=False,
             ),
         ],
@@ -118,10 +118,10 @@ class TestUpdateGameState:
     @patch("santorini_bot.board.Board.move", autospec=True)
     @patch("santorini_bot.board.Board.place_worker", autospec=True)
     @patch("santorini_bot.board.Board.player_can_place_workers", autospec=True)
-    @patch("santorini_bot.board.Board.player_in_lose_state_after_move", autospec=True)
+    @patch("santorini_bot.board.Board.player_in_loss_state_after_move", autospec=True)
     def setup(
         self,
-        mock_player_in_lose_state_after_move: Mock,
+        mock_player_in_loss_state_after_move: Mock,
         mock_player_can_place_workers: Mock,
         mock_place_worker: Mock,
         mock_move: Mock,
@@ -134,8 +134,8 @@ class TestUpdateGameState:
     ):
         param: TestUpdateGameState.Parameters = request.param
 
-        mock_player_in_lose_state_after_move.return_value = (
-            param.in_lose_state_after_move
+        mock_player_in_loss_state_after_move.return_value = (
+            param.in_loss_state_after_move
         )
         mock_check_win_state_board_win_state.return_value = (
             param.in_win_state_after_move
@@ -176,7 +176,7 @@ class TestUpdateGameState:
             mock_change_active_player=mock_change_active_player,
             mock_change_current_turn_action=mock_change_current_turn_action,
             initial_game_state_log_len=initial_game_state_log_len,
-            in_lose_state_after_move=param.in_lose_state_after_move,
+            in_loss_state_after_move=param.in_loss_state_after_move,
             in_win_state_after_move=param.in_win_state_after_move,
         )
 
@@ -202,12 +202,12 @@ class TestUpdateGameState:
 
     def test_updates_player_order(self, setup: Fixture):
         if not setup.in_win_state_after_move and (
-            setup.next_turn_action != TurnActions.MOVE or setup.in_lose_state_after_move
+            setup.next_turn_action != TurnActions.MOVE or setup.in_loss_state_after_move
         ):
             setup.mock_change_active_player.assert_called()
 
     def test_updates_turn_order(self, setup: Fixture):
-        if not setup.in_win_state_after_move and not setup.in_lose_state_after_move:
+        if not setup.in_win_state_after_move and not setup.in_loss_state_after_move:
             setup.mock_change_current_turn_action.assert_called()
 
     @pytest.mark.parametrize(
@@ -387,7 +387,7 @@ class TestChangeCurrentTurnAction:
         assert setup.turn_order == setup.expected_turn_order
 
 
-class TestCheckLoseStatePlayerCantBuild:
+class TestChecklossStatePlayerCantBuild:
     @dataclass
     class Parameters:
         description: str
@@ -395,14 +395,14 @@ class TestCheckLoseStatePlayerCantBuild:
         initial_player_order: deque[Color]
         final_player_order: deque[Color]
         previous_turn_action: TurnActions
-        player_in_lose_state_after_move: bool
+        player_in_loss_state_after_move: bool
         expect_log_message: bool
 
     @dataclass
     class Fixture:
         expected_player_order: deque[Color]
         test_player_order: deque[Color]
-        player_in_lose_state_after_move: bool
+        player_in_loss_state_after_move: bool
         captured_log: str
         expect_log_message: bool
 
@@ -414,7 +414,7 @@ class TestCheckLoseStatePlayerCantBuild:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 previous_turn_action=TurnActions.MOVE,
-                player_in_lose_state_after_move=True,
+                player_in_loss_state_after_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -423,7 +423,7 @@ class TestCheckLoseStatePlayerCantBuild:
                 initial_player_order=deque([Color.BLUE]),
                 final_player_order=deque([Color.BLUE]),
                 previous_turn_action=TurnActions.MOVE,
-                player_in_lose_state_after_move=True,
+                player_in_loss_state_after_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -432,7 +432,7 @@ class TestCheckLoseStatePlayerCantBuild:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 previous_turn_action=TurnActions.PLACE_WORKER,
-                player_in_lose_state_after_move=True,
+                player_in_loss_state_after_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -441,25 +441,25 @@ class TestCheckLoseStatePlayerCantBuild:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 previous_turn_action=TurnActions.BUILD,
-                player_in_lose_state_after_move=True,
+                player_in_loss_state_after_move=True,
                 expect_log_message=False,
             ),
             Parameters(
-                description="In lose state after move",
+                description="In loss state after move",
                 previous_game_state_exists=True,
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.WHITE]),
                 previous_turn_action=TurnActions.MOVE,
-                player_in_lose_state_after_move=True,
+                player_in_loss_state_after_move=True,
                 expect_log_message=True,
             ),
             Parameters(
-                description="Not in lose state after move",
+                description="Not in loss state after move",
                 previous_game_state_exists=True,
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 previous_turn_action=TurnActions.MOVE,
-                player_in_lose_state_after_move=False,
+                player_in_loss_state_after_move=False,
                 expect_log_message=False,
             ),
         ],
@@ -474,7 +474,7 @@ class TestCheckLoseStatePlayerCantBuild:
         caplog,
         request,
     ) -> Fixture:
-        param: TestCheckLoseStatePlayerCantBuild.Parameters = request.param
+        param: TestChecklossStatePlayerCantBuild.Parameters = request.param
 
         if not param.previous_game_state_exists:
             mock_previous_game_state_property.return_value = None
@@ -488,21 +488,21 @@ class TestCheckLoseStatePlayerCantBuild:
             type(  # type: ignore
                 game_manager.previous_game_state
             ).active_player = param.initial_player_order[0]
-            game_manager.previous_game_state.board.player_in_lose_state_after_move.return_value = (  # type: ignore # noqa: E501
-                param.player_in_lose_state_after_move
+            game_manager.previous_game_state.board.player_in_loss_state_after_move.return_value = (  # type: ignore # noqa: E501
+                param.player_in_loss_state_after_move
             )
 
-        game_manager._check_lose_state_player_cant_build()
+        game_manager._check_loss_state_player_cant_build()
 
         return self.Fixture(
             expected_player_order=param.final_player_order,
             test_player_order=game_manager.player_order,
-            player_in_lose_state_after_move=param.player_in_lose_state_after_move,
+            player_in_loss_state_after_move=param.player_in_loss_state_after_move,
             captured_log=caplog.text,
             expect_log_message=param.expect_log_message,
         )
 
-    def test_display_message_if_in_lose_state(self, setup: Fixture):
+    def test_display_message_if_in_loss_state(self, setup: Fixture):
         if setup.expect_log_message:
             assert "lost! No valid builds." in setup.captured_log
 
@@ -510,7 +510,7 @@ class TestCheckLoseStatePlayerCantBuild:
         assert setup.test_player_order == setup.expected_player_order
 
 
-class TestCheckLoseStatePlayerCantMove:
+class TestChecklossStatePlayerCantMove:
     @dataclass
     class Parameters:
         description: str
@@ -518,14 +518,14 @@ class TestCheckLoseStatePlayerCantMove:
         initial_player_order: deque[Color]
         final_player_order: deque[Color]
         current_turn_action: TurnActions
-        player_in_lose_state_before_move: bool
+        player_in_loss_state_before_move: bool
         expect_log_message: bool
 
     @dataclass
     class Fixture:
         expected_player_order: deque[Color]
         test_player_order: deque[Color]
-        player_in_lose_state_before_move: bool
+        player_in_loss_state_before_move: bool
         captured_log: str
         expect_log_message: bool
 
@@ -537,7 +537,7 @@ class TestCheckLoseStatePlayerCantMove:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 current_turn_action=TurnActions.MOVE,
-                player_in_lose_state_before_move=True,
+                player_in_loss_state_before_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -546,7 +546,7 @@ class TestCheckLoseStatePlayerCantMove:
                 initial_player_order=deque([Color.BLUE]),
                 final_player_order=deque([Color.BLUE]),
                 current_turn_action=TurnActions.MOVE,
-                player_in_lose_state_before_move=True,
+                player_in_loss_state_before_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -555,7 +555,7 @@ class TestCheckLoseStatePlayerCantMove:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 current_turn_action=TurnActions.PLACE_WORKER,
-                player_in_lose_state_before_move=True,
+                player_in_loss_state_before_move=True,
                 expect_log_message=False,
             ),
             Parameters(
@@ -564,25 +564,25 @@ class TestCheckLoseStatePlayerCantMove:
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 current_turn_action=TurnActions.BUILD,
-                player_in_lose_state_before_move=True,
+                player_in_loss_state_before_move=True,
                 expect_log_message=False,
             ),
             Parameters(
-                description="In lose state before move",
+                description="In loss state before move",
                 previous_game_state_exists=True,
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.WHITE]),
                 current_turn_action=TurnActions.MOVE,
-                player_in_lose_state_before_move=True,
+                player_in_loss_state_before_move=True,
                 expect_log_message=True,
             ),
             Parameters(
-                description="Not in lose state before move",
+                description="Not in loss state before move",
                 previous_game_state_exists=True,
                 initial_player_order=deque([Color.BLUE, Color.WHITE]),
                 final_player_order=deque([Color.BLUE, Color.WHITE]),
                 current_turn_action=TurnActions.MOVE,
-                player_in_lose_state_before_move=False,
+                player_in_loss_state_before_move=False,
                 expect_log_message=False,
             ),
         ],
@@ -601,7 +601,7 @@ class TestCheckLoseStatePlayerCantMove:
         caplog,
         request,
     ) -> Fixture:
-        param: TestCheckLoseStatePlayerCantMove.Parameters = request.param
+        param: TestChecklossStatePlayerCantMove.Parameters = request.param
 
         if not param.previous_game_state_exists:
             mock_previous_game_state_property.return_value = None
@@ -614,21 +614,21 @@ class TestCheckLoseStatePlayerCantMove:
             type(  # type: ignore
                 game_manager.previous_game_state
             ).active_player = param.initial_player_order[0]
-            game_manager.previous_game_state.board.player_in_lose_state_before_move.return_value = (  # type: ignore # noqa: E501
-                param.player_in_lose_state_before_move
+            game_manager.previous_game_state.board.player_in_loss_state_before_move.return_value = (  # type: ignore # noqa: E501
+                param.player_in_loss_state_before_move
             )
 
-        game_manager._check_lose_state_player_cant_move()
+        game_manager._check_loss_state_player_cant_move()
 
         return self.Fixture(
             expected_player_order=param.final_player_order,
             test_player_order=game_manager.player_order,
-            player_in_lose_state_before_move=param.player_in_lose_state_before_move,
+            player_in_loss_state_before_move=param.player_in_loss_state_before_move,
             captured_log=caplog.text,
             expect_log_message=param.expect_log_message,
         )
 
-    def test_display_message_if_in_lose_state(self, setup: Fixture):
+    def test_display_message_if_in_loss_state(self, setup: Fixture):
         if setup.expect_log_message:
             assert "lost! No valid moves." in setup.captured_log
 
@@ -685,7 +685,7 @@ class TestCheckWinStateOnePlayerLeft:
             expect_log_message=param.expect_log_message,
         )
 
-    def test_display_message_if_in_lose_state(self, setup: Fixture):
+    def test_display_message_if_in_loss_state(self, setup: Fixture):
         if setup.expect_log_message:
             assert "won!" in setup.captured_log
 
@@ -769,7 +769,7 @@ class TestCheckWinStateBoardWinState:
             expect_log_message=param.expect_log_message,
         )
 
-    def test_display_message_if_in_lose_state(self, setup: Fixture):
+    def test_display_message_if_in_loss_state(self, setup: Fixture):
         if setup.expect_log_message:
             assert "won!" in setup.captured_log
 
